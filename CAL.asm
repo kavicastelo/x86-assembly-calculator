@@ -67,37 +67,38 @@ menu_loop:
 
 add_operation:
     call get_input1
-    mov eax, [rel num1]
     call get_input2
-    add eax, [rel num2]
-    mov [rel result], eax
+    mov eax, [rel num1]         ; Load num1 into eax
+    add eax, [rel num2]         ; Add num2 to eax
+    mov [rel result], eax       ; Store the result
     jmp print_result
 
 sub_operation:
     call get_input1
-    mov eax, [rel num1]
     call get_input2
-    sub eax, [rel num2]
-    mov [rel result], eax
+    mov eax, [rel num1]         ; Load num1 into eax
+    sub eax, [rel num2]         ; Subtract num2 from eax
+    mov [rel result], eax       ; Store the result
     jmp print_result
 
 mul_operation:
     call get_input1
-    mov eax, [rel num1]
     call get_input2
-    imul eax, [rel num2]
-    mov [rel result], eax
+    mov eax, [rel num1]         ; Load num1 into eax
+    imul eax, [rel num2]        ; Multiply eax by num2
+    mov [rel result], eax       ; Store the result
     jmp print_result
 
 div_operation:
     call get_input1
-    mov eax, [rel num2]
-    test eax, eax           ; Check if the divisor is 0
-    jz handle_div_zero      ; Jump if zero
-    mov eax, [rel num1]
-    xor edx, edx            ; Clear EDX before division
-    div dword [rel num2]
-    mov [rel result], eax
+    call get_input2
+    mov eax, [rel num2]         ; Load num2 (divisor) into eax
+    test eax, eax               ; Check if the divisor is 0
+    jz handle_div_zero          ; Jump to error handling if divisor is 0
+    mov eax, [rel num1]         ; Load num1 (dividend) into eax
+    xor edx, edx                ; Clear edx before division
+    div dword [rel num2]        ; Divide edx:eax by num2 (divisor)
+    mov [rel result], eax       ; Store the quotient in result
     jmp print_result
 
 handle_div_zero:
