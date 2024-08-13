@@ -1,10 +1,10 @@
 section .data
     int_format db "%d", 0                  ; Format for scanf to read integers
-    float_format db "%f", 0               ; Format for scanf to read double
+    float_format db "%lf", 0               ; Format for scanf to read double (use %lf for scanf)
     type_prompt db "Enter 1 for Integer, 2 for Float: ", 0
     operation_prompt db "Choose an operation:", 10, 0
     int_result_msg db "Result: %d", 10, 0
-    float_result_msg db "Result: %f", 10, 0
+    float_result_msg db "Result: %f", 10, 0   ; Use %f for printf to print floats
     prompt1 db "Enter first number: ", 0
     prompt2 db "Enter second number: ", 0
 
@@ -14,9 +14,9 @@ section .bss
     int_num1 resd 1        ; Reserve space for first integer
     int_num2 resd 1        ; Reserve space for second integer
     int_result resd 1      ; Reserve space for integer result
-    float_num1 resq 1      ; Reserve space for first floating-point number
-    float_num2 resq 1      ; Reserve space for second floating-point number
-    float_result resq 1    ; Reserve space for floating-point result
+    float_num1 resq 1      ; Reserve space for first floating-point number (double)
+    float_num2 resq 1      ; Reserve space for second floating-point number (double)
+    float_result resq 1    ; Reserve space for floating-point result (double)
 
 section .text
     extern printf, scanf, ExitProcess
@@ -44,11 +44,10 @@ main:
 
 integer_operations:
     call get_int_input1
-    mov eax, [rel int_num1]
-
     call get_int_input2
-    mov eax, [rel int_num2]
-    add eax, [rel int_num1]
+
+    mov eax, [rel int_num1]
+    add eax, [rel int_num2]
     mov [rel int_result], eax
     lea rcx, [rel int_result_msg]
     mov rdx, [rel int_result]
@@ -57,13 +56,18 @@ integer_operations:
 
 float_operations:
     call get_float_input1
-    movsd xmm0, qword [rel float_num1]
     call get_float_input2
-    addsd xmm0, qword [rel float_num2]
-    movsd qword [rel float_result], xmm0
+
+    ; Perform floating-point addition
+    movsd xmm0, qword [rel float_num1]   ; Load first float into xmm0
+    addsd xmm0, qword [rel float_num2]   ; Add second float to xmm0
+    movsd qword [rel float_result], xmm0 ; Store result back to memory
+
+    ; Print the floating-point result
     lea rcx, [rel float_result_msg]
-    movsd xmm1, qword [rel float_result]
+    mov rdx, qword [rel float_result]    ; Move float result to rdx for printf
     call printf
+
     jmp exit_program
 
 get_int_input1:
