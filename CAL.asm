@@ -7,6 +7,8 @@ section .data
     option3 db "3. Multiplication", 10, 0
     option4 db "4. Division", 10, 0
     option5 db "5. Exit", 10, 0
+    option6 db "6. Modulus", 10, 0
+    option7 db "7. Exponentiation(2^2)", 10, 0
     prompt db "Enter your choice: ", 0
     prompt1 db "Enter first number: ", 0
     prompt2 db "Enter second number: ", 0
@@ -14,7 +16,6 @@ section .data
     float_result_msg db "Result: %f", 10, 0   ; Use %f for printf to print floats
     error_msg db "Error: Division by zero!", 10, 0
     type_prompt db "Enter 1 for Integer, 2 for Float: ", 0
-    option6 db "6. Modulus", 10, 0
 
 section .bss
     choice resd 1          ; Store user's menu choice (integer)
@@ -27,7 +28,7 @@ section .bss
     float_result resq 1    ; Reserve space for floating-point result (double)
 
 section .text
-    extern printf, scanf, ExitProcess, fmod
+    extern printf, scanf, ExitProcess, fmod, pow
     global main
 
 main:
@@ -48,6 +49,8 @@ menu_loop:
     lea rcx, [rel option5]
     call printf
     lea rcx, [rel option6]
+    call printf
+    lea rcx, [rel option7]
     call printf
 
     ; Get the user's choice
@@ -71,6 +74,8 @@ menu_loop:
     je choose_num_type_div
     cmp eax, 6
     je choose_num_type_mod
+    cmp eax, 7
+    je choose_num_type_pow
     cmp eax, 5
     je exit_program
 
@@ -162,6 +167,23 @@ choose_num_type_mod:
     ; Invalid choice, go back to menu
     jmp menu_loop
 
+choose_num_type_pow:
+    ; Ask for number type (1 for Integer, 2 for Float)
+    lea rcx, [rel type_prompt]
+    call printf
+    lea rcx, [rel int_format]
+    lea rdx, [rel num_type]
+    call scanf
+
+    mov eax, [rel num_type]
+    cmp eax, 1
+    je int_pow_operation
+    cmp eax, 2
+    je float_pow_operation
+
+    ; Invalid choice, go back to menu
+    jmp menu_loop
+
 int_add_operation:
     call int_get_input1
     call int_get_input2
@@ -215,6 +237,33 @@ int_handle_div_zero:
     lea rcx, [rel error_msg]
     call printf
     jmp menu_loop
+
+int_pow_operation:
+    call int_get_input1
+    call int_get_input2
+    mov eax, [rel num1]          ; Load the base into eax
+    mov ecx, [rel num2]          ; Load the exponent into ecx
+
+    cmp ecx, 0                   ; If the exponent is 0
+    je int_pow_done_zero         ; Result should be 1 for any base^0
+
+    mov edx, eax                 ; Store the base value in edx
+    dec ecx                      ; Decrement exponent by 1, since we already have base^1
+
+int_pow_loop:
+    imul eax, edx                ; Multiply eax by the base (edx)
+    loop int_pow_loop            ; Loop until ecx reaches 0
+
+    jmp int_pow_done             ; Jump to done
+
+int_pow_done_zero:
+    mov eax, 1                   ; If the exponent was 0, the result is 1
+    jmp int_pow_done
+
+int_pow_done:
+    mov [rel result], eax        ; Store the result
+    jmp int_print_result         ; Print the result
+
 
 int_print_result:
     ; Print the result
@@ -281,6 +330,17 @@ float_handle_div_zero:
     lea rcx, [rel error_msg]
     call printf
     jmp menu_loop
+
+float_pow_operation:
+    call get_float_input1
+    call get_float_input2
+
+    ; Perform floating-point exponentiation
+    movsd xmm0, qword [rel float_num1]   ; Load the base into xmm0
+    movsd xmm1, qword [rel float_num2]   ; Load the exponent into xmm1
+    call pow                             ; Call pow(xmm0, xmm1)
+    movsd qword [rel float_result], xmm0 ; Store the result in memory
+    jmp float_print_result
 
 float_print_result:
     ; Print the result
