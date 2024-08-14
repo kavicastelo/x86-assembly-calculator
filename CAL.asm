@@ -8,7 +8,7 @@ section .data
     option4 db "4. Division", 10, 0
     option5 db "5. Exit", 10, 0
     option6 db "6. Modulus", 10, 0
-    option7 db "7. Exponentiation", 10, 0
+    option7 db "7. Exponentiation(2^2)", 10, 0
     prompt db "Enter your choice: ", 0
     prompt1 db "Enter first number: ", 0
     prompt2 db "Enter second number: ", 0
