@@ -27,7 +27,7 @@ section .bss
     float_result resq 1    ; Reserve space for floating-point result (double)
 
 section .text
-    extern printf, scanf, ExitProcess
+    extern printf, scanf, ExitProcess, fmod
     global main
 
 main:
@@ -70,7 +70,7 @@ menu_loop:
     cmp eax, 4
     je choose_num_type_div
     cmp eax, 6
-    je int_mod_operation
+    je choose_num_type_mod
     cmp eax, 5
     je exit_program
 
@@ -141,6 +141,23 @@ choose_num_type_div:
     je int_div_operation
     cmp eax, 2
     je float_div_operation
+
+    ; Invalid choice, go back to menu
+    jmp menu_loop
+
+choose_num_type_mod:
+    ; Ask for number type (1 for Integer, 2 for Float)
+    lea rcx, [rel type_prompt]
+    call printf
+    lea rcx, [rel int_format]
+    lea rdx, [rel num_type]
+    call scanf
+
+    mov eax, [rel num_type]
+    cmp eax, 1
+    je int_mod_operation
+    cmp eax, 2
+    je float_mod_operation
 
     ; Invalid choice, go back to menu
     jmp menu_loop
@@ -247,6 +264,17 @@ float_div_operation:
     jp float_handle_div_zero             ; Jump to error handling if divisor is 0
     divsd xmm0, xmm1                     ; Divide xmm0 by xmm1
     movsd qword [rel float_result], xmm0 ; Store result back to memory
+    jmp float_print_result
+
+float_mod_operation:
+    call get_float_input1
+    call get_float_input2
+
+    ; Perform floating-point modulus
+    movsd xmm0, qword [rel float_num1]   ; Load first float into xmm0
+    movsd xmm1, qword [rel float_num2]   ; Load second float into xmm1
+    call fmod                            ; Call fmod(xmm0, xmm1)
+    movsd qword [rel float_result], xmm0 ; Store the result in memory
     jmp float_print_result
 
 float_handle_div_zero:
