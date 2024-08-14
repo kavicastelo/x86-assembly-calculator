@@ -14,6 +14,7 @@ section .data
     float_result_msg db "Result: %f", 10, 0   ; Use %f for printf to print floats
     error_msg db "Error: Division by zero!", 10, 0
     type_prompt db "Enter 1 for Integer, 2 for Float: ", 0
+    option6 db "6. Modulus", 10, 0
 
 section .bss
     choice resd 1          ; Store user's menu choice (integer)
@@ -46,6 +47,8 @@ menu_loop:
     call printf
     lea rcx, [rel option5]
     call printf
+    lea rcx, [rel option6]
+    call printf
 
     ; Get the user's choice
     lea rcx, [rel prompt]
@@ -66,6 +69,8 @@ menu_loop:
     je choose_num_type_mul
     cmp eax, 4
     je choose_num_type_div
+    cmp eax, 6
+    je int_mod_operation
     cmp eax, 5
     je exit_program
 
@@ -174,6 +179,19 @@ int_div_operation:
     xor edx, edx                ; Clear edx before division
     div dword [rel num2]        ; Divide edx:eax by num2 (divisor)
     mov [rel result], eax       ; Store the quotient in result
+    jmp int_print_result
+
+int_mod_operation:
+    call int_get_input1
+    call int_get_input2
+    mov eax, [rel num2]         ; Load num2 (divisor) into eax
+    test eax, eax               ; Check if the divisor is 0
+    jz int_handle_div_zero      ; Jump to error handling if divisor is 0
+    mov eax, [rel num1]         ; Load num1 into eax
+    xor edx, edx                ; Clear edx for division
+    div dword [rel num2]        ; Perform division
+    mov eax, edx                ; Move remainder from edx to eax
+    mov [rel result], eax       ; Store the remainder in result
     jmp int_print_result
 
 int_handle_div_zero:
