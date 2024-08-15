@@ -13,6 +13,8 @@ section .data
     option9 db "9. Cosine", 10, 0
     option10 db "10. Tangent", 10, 0
     option11 db "11. Square Root", 10, 0
+    option12 db "12. Store Result", 10, 0
+    option13 db "13. Recall Stored Result", 10, 0
     prompt db "Enter your choice: ", 0
     prompt1 db "Enter first number: ", 0
     prompt2 db "Enter second number: ", 0
@@ -30,6 +32,8 @@ section .bss
     float_num1 resq 1      ; Reserve space for first floating-point number (double)
     float_num2 resq 1      ; Reserve space for second floating-point number (double)
     float_result resq 1    ; Reserve space for floating-point result (double)
+    memory_storage resq 1   ; Reserve space for storing a floating-point result
+    memory_used resb 1      ; Flag to indicate if memory storage is in use
 
 section .text
     extern printf, scanf, ExitProcess, fmod, pow, sin, cos, tan, sqrt
@@ -64,6 +68,10 @@ menu_loop:
     call printf
     lea rcx, [rel option11]
     call printf
+    lea rcx, [rel option12]
+    call printf
+    lea rcx, [rel option13]
+    call printf
 
     ; Get the user's choice
     lea rcx, [rel prompt]
@@ -96,6 +104,10 @@ menu_loop:
     je float_tan_operation
     cmp eax, 11
     je float_sqrt_operation
+    cmp eax, 12
+    je store_result_operation
+    cmp eax, 13
+    je recall_result_operation
     cmp eax, 5
     je exit_program
 
@@ -452,6 +464,40 @@ get_float_input2:
 
     add rsp, 40               ; Restore stack alignment
     ret
+
+
+; memory_operations
+store_result_operation:
+    mov al, [rel num_type]    ; Check the type of the last calculation (1 for int, 2 for float)
+    cmp al, 1
+    je store_int_result
+
+    ; Store the floating-point result
+    movsd xmm0, qword [rel float_result]
+    movsd qword [rel memory_storage], xmm0
+    mov byte [rel memory_used], 1  ; Set the memory_used flag
+    jmp menu_loop
+
+store_int_result:
+    cvtsi2sd xmm0, dword [rel result]
+    movsd qword [rel memory_storage], xmm0
+    mov byte [rel memory_used], 1  ; Set the memory_used flag
+    jmp menu_loop
+
+recall_result_operation:
+    cmp byte [rel memory_used], 0
+    je no_memory_error
+
+    movsd xmm0, qword [rel memory_storage]
+    movsd qword [rel float_num1], xmm0
+    mov byte [rel memory_used], 0  ; Clear the memory_used flag
+    jmp menu_loop
+
+no_memory_error:
+    ; Display error message for no stored memory
+    lea rcx, [rel error_msg]
+    call printf
+    jmp menu_loop
 
 exit_program:
     ; Clean up and exit
