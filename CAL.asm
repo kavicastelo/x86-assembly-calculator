@@ -9,6 +9,9 @@ section .data
     option5 db "5. Exit", 10, 0
     option6 db "6. Modulus", 10, 0
     option7 db "7. Exponentiation(2^2)", 10, 0
+    option8 db "8. Sine", 10, 0
+    option9 db "9. Cosine", 10, 0
+    option10 db "10. Tangent", 10, 0
     prompt db "Enter your choice: ", 0
     prompt1 db "Enter first number: ", 0
     prompt2 db "Enter second number: ", 0
@@ -28,7 +31,7 @@ section .bss
     float_result resq 1    ; Reserve space for floating-point result (double)
 
 section .text
-    extern printf, scanf, ExitProcess, fmod, pow
+    extern printf, scanf, ExitProcess, fmod, pow, sin, cos, tan
     global main
 
 main:
@@ -51,6 +54,12 @@ menu_loop:
     lea rcx, [rel option6]
     call printf
     lea rcx, [rel option7]
+    call printf
+    lea rcx, [rel option8]
+    call printf
+    lea rcx, [rel option9]
+    call printf
+    lea rcx, [rel option10]
     call printf
 
     ; Get the user's choice
@@ -76,6 +85,12 @@ menu_loop:
     je choose_num_type_mod
     cmp eax, 7
     je choose_num_type_pow
+    cmp eax, 8
+    je float_sin_operation
+    cmp eax, 9
+    je float_cos_operation
+    cmp eax, 10
+    je float_tan_operation
     cmp eax, 5
     je exit_program
 
@@ -340,6 +355,29 @@ float_pow_operation:
     movsd xmm1, qword [rel float_num2]   ; Load the exponent into xmm1
     call pow                             ; Call pow(xmm0, xmm1)
     movsd qword [rel float_result], xmm0 ; Store the result in memory
+    jmp float_print_result
+
+extern sin, cos, tan
+
+float_sin_operation:
+    call get_float_input1
+    movsd xmm0, qword [rel float_num1]
+    call sin
+    movsd qword [rel float_result], xmm0
+    jmp float_print_result
+
+float_cos_operation:
+    call get_float_input1
+    movsd xmm0, qword [rel float_num1]
+    call cos
+    movsd qword [rel float_result], xmm0
+    jmp float_print_result
+
+float_tan_operation:
+    call get_float_input1
+    movsd xmm0, qword [rel float_num1]
+    call tan
+    movsd qword [rel float_result], xmm0
     jmp float_print_result
 
 float_print_result:
