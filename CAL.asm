@@ -12,6 +12,7 @@ section .data
     option8 db "8. Sine", 10, 0
     option9 db "9. Cosine", 10, 0
     option10 db "10. Tangent", 10, 0
+    option11 db "11. Square Root", 10, 0
     prompt db "Enter your choice: ", 0
     prompt1 db "Enter first number: ", 0
     prompt2 db "Enter second number: ", 0
@@ -31,7 +32,7 @@ section .bss
     float_result resq 1    ; Reserve space for floating-point result (double)
 
 section .text
-    extern printf, scanf, ExitProcess, fmod, pow, sin, cos, tan
+    extern printf, scanf, ExitProcess, fmod, pow, sin, cos, tan, sqrt
     global main
 
 main:
@@ -60,6 +61,8 @@ menu_loop:
     lea rcx, [rel option9]
     call printf
     lea rcx, [rel option10]
+    call printf
+    lea rcx, [rel option11]
     call printf
 
     ; Get the user's choice
@@ -91,6 +94,8 @@ menu_loop:
     je float_cos_operation
     cmp eax, 10
     je float_tan_operation
+    cmp eax, 11
+    je float_sqrt_operation
     cmp eax, 5
     je exit_program
 
@@ -377,6 +382,13 @@ float_tan_operation:
     call get_float_input1
     movsd xmm0, qword [rel float_num1]
     call tan
+    movsd qword [rel float_result], xmm0
+    jmp float_print_result
+
+float_sqrt_operation:
+    call get_float_input1
+    movsd xmm0, qword [rel float_num1]
+    call sqrt
     movsd qword [rel float_result], xmm0
     jmp float_print_result
 
