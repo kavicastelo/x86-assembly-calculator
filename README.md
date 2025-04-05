@@ -1,4 +1,4 @@
-# assembly_calculator
+# Nasm x86 Assembly Calculator
 
 ### Overview
 
